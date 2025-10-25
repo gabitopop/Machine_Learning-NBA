@@ -1,28 +1,41 @@
 from kedro.pipeline import Node, Pipeline
 
-from .nodes import create_model_input_table, preprocess_companies, preprocess_shuttles
+from .nodes import clean_nba_data, create_features, create_model_input_table
 
 
 def create_pipeline(**kwargs) -> Pipeline:
+    """Crea el pipeline de procesamiento de datos para el proyecto NBA.
+    
+    Este pipeline procesa los datos raw de partidos de la NBA a través de:
+    1. Limpieza de datos (valores nulos, outliers, inconsistencias)
+    2. Creación de características (feature engineering)
+    3. Preparación de la tabla de entrada para el modelo
+    
+    Returns:
+        Pipeline de procesamiento de datos NBA.
+    """
     return Pipeline(
         [
             Node(
-                func=preprocess_companies,
-                inputs="companies",
-                outputs="preprocessed_companies",
-                name="preprocess_companies_node",
+                func=clean_nba_data,
+                inputs=["game", "params:data_processing"],
+                outputs="games_cleaned",
+                name="clean_nba_data_node",
+                tags=["data_cleaning", "nba"],
             ),
             Node(
-                func=preprocess_shuttles,
-                inputs="shuttles",
-                outputs="preprocessed_shuttles",
-                name="preprocess_shuttles_node",
+                func=create_features,
+                inputs=["games_cleaned", "params:data_processing"],
+                outputs="games_features",
+                name="create_features_node",
+                tags=["feature_engineering", "nba"],
             ),
             Node(
                 func=create_model_input_table,
-                inputs=["preprocessed_shuttles", "preprocessed_companies", "reviews"],
+                inputs=["games_features", "params:data_science"],
                 outputs="model_input_table",
                 name="create_model_input_table_node",
+                tags=["model_preparation", "nba"],
             ),
         ]
     )

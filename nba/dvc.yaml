@@ -1,0 +1,74 @@
+stages:
+  data_processing:
+    cmd: kedro run --pipeline data_processing
+    deps:
+    - data/01_raw/game.csv
+    - data/01_raw/other_stats.csv
+    - data/01_raw/team.csv
+    - data/01_raw/player.csv
+    - data/01_raw/game_info.csv
+    - conf/base/parameters_data_processing.yml
+    - src/nba/pipelines/data_processing/
+    outs:
+    - data/02_intermediate/games_cleaned.csv
+    - data/03_primary/games_features.csv
+    - data/04_feature/model_input_table.csv
+    metrics:
+    - metrics/data_processing.json
+    plots:
+    - plots/data_quality_report.html
+
+  data_science:
+    cmd: kedro run --pipeline data_science
+    deps:
+    - data/04_feature/model_input_table.csv
+    - conf/base/parameters_data_science.yml
+    - src/nba/pipelines/data_science/
+    outs:
+    - data/06_models/random_forest_model.pkl
+    - data/06_models/gradient_boosting_model.pkl
+    - data/06_models/logistic_regression_model.pkl
+    - data/06_models/nba_classifier.pkl
+    - data/07_model_output/model_metrics.json
+    - data/07_model_output/best_model_metrics.json
+    metrics:
+    - metrics/data_science.json
+    - metrics/model_comparison.json
+    plots:
+    - plots/model_performance.html
+    - plots/feature_importance.html
+
+  reporting:
+    cmd: kedro run --pipeline reporting
+    deps:
+    - data/04_feature/model_input_table.csv
+    - data/06_models/nba_classifier.pkl
+    - data/07_model_output/model_metrics.json
+    - conf/base/parameters_reporting.yml
+    - src/nba/pipelines/reporting/
+    outs:
+    - data/08_reporting/win_distribution_plot.png
+    - data/08_reporting/correlation_matrix_plot.png
+    - data/08_reporting/feature_importance_plot.png
+    - data/08_reporting/confusion_matrix_plot.png
+    - data/08_reporting/roc_curve_plot.png
+    - data/08_reporting/model_report.html
+    metrics:
+    - metrics/reporting.json
+    plots:
+    - plots/final_report.html
+
+  ml_pipeline:
+    cmd: kedro run --pipeline ml_pipeline
+    deps:
+    - data/01_raw/
+    - conf/base/
+    - src/nba/pipelines/
+    outs:
+    - data/07_model_output/
+    - data/08_reporting/
+    metrics:
+    - metrics/ml_pipeline.json
+    plots:
+    - plots/ml_pipeline_report.html
+

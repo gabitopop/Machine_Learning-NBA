@@ -1,0 +1,21 @@
+{
+  "data_quality": {
+    "total_records": 0,
+    "missing_values": 0,
+    "duplicate_records": 0,
+    "outliers_detected": 0,
+    "data_completeness": 0.0
+  },
+  "feature_engineering": {
+    "features_created": 0,
+    "categorical_encoded": 0,
+    "numerical_scaled": 0,
+    "temporal_features": 0
+  },
+  "processing_time": {
+    "cleaning_time": 0.0,
+    "feature_creation_time": 0.0,
+    "total_time": 0.0
+  }
+}
+

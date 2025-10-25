@@ -1,0 +1,105 @@
+# Parámetros para el pipeline de reportes NBA
+
+# Configuración de visualizaciones
+visualizations:
+  # Configuración general de gráficos
+  general:
+    figure_size: [12, 8]
+    dpi: 300
+    style: seaborn-v0_8
+    color_palette: husl
+    font_size: 12
+    title_size: 14
+  
+  # Gráfico de distribución de victorias
+  win_distribution:
+    title: "Distribución de Victorias Locales vs Visitantes"
+    xlabel: "Resultado del Partido"
+    ylabel: "Número de Partidos"
+    colors: ["#ff6b6b", "#4ecdc4"]  # rojo para derrota, verde para victoria
+  
+  # Matriz de correlación
+  correlation_matrix:
+    title: "Matriz de Correlación - Variables de Rendimiento NBA"
+    cmap: coolwarm
+    center: 0
+    square: true
+    annot: true
+    fmt: ".2f"
+    cbar_kws:
+      shrink: 0.8
+  
+  # Gráfico de importancia de características
+  feature_importance:
+    title: "Importancia de Características - Random Forest"
+    xlabel: "Importancia"
+    ylabel: "Características"
+    orientation: horizontal
+    color: skyblue
+    top_n: 20  # mostrar solo las top 20 características
+  
+  # Matriz de confusión
+  confusion_matrix:
+    title: "Matriz de Confusión"
+    xlabel: "Predicción"
+    ylabel: "Valor Real"
+    labels: ["Derrota Local", "Victoria Local"]
+    cmap: Blues
+    annot: true
+    fmt: "d"
+  
+  # Curva ROC
+  roc_curve:
+    title: "Curva ROC - Comparación de Modelos"
+    xlabel: "Tasa de Falsos Positivos"
+    ylabel: "Tasa de Verdaderos Positivos"
+    colors: ["blue", "red", "green", "orange"]
+    linewidth: 2
+    legend: true
+
+# Configuración de reportes
+reports:
+  # Reporte de métricas del modelo
+  model_metrics:
+    title: "Reporte de Evaluación del Modelo NBA"
+    sections:
+      - "Resumen Ejecutivo"
+      - "Métricas de Rendimiento"
+      - "Análisis de Características"
+      - "Comparación de Modelos"
+      - "Recomendaciones"
+  
+  # Configuración de formato
+  format:
+    decimal_places: 3
+    percentage_places: 1
+    include_timestamp: true
+    include_model_info: true
+
+# Configuración de exportación
+export:
+  # Formatos de exportación
+  formats:
+    - png  # para visualizaciones
+    - pdf  # para reportes
+    - csv  # para datos
+    - json  # para métricas
+  
+  # Configuración de calidad
+  quality:
+    dpi: 300
+    bbox_inches: tight
+    pad_inches: 0.1
+  
+  # Configuración de nombres de archivos
+  file_naming:
+    include_date: true
+    include_model: true
+    include_metric: true
+    separator: "_"
+
+# Configuración de logging para reportes
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "data/08_reporting/reporting.log"

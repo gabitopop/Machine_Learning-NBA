@@ -1,0 +1,108 @@
+# Parámetros para el pipeline de procesamiento de datos NBA
+
+# Configuración de limpieza de datos
+data_cleaning:
+  # Estrategia de imputación de valores nulos
+  imputation_strategy:
+    numeric: median  # mediana para variables numéricas
+    categorical: mode  # moda para variables categóricas
+  
+  # Configuración de detección de outliers
+  outlier_detection:
+    method: iqr  # método IQR (Rango Intercuartílico)
+    multiplier: 1.5  # multiplicador para límites IQR
+    treatment: cap  # cap outliers en lugar de eliminarlos
+  
+  # Variables a excluir del análisis de outliers
+  exclude_from_outlier_analysis:
+    - game_id
+    - season_id
+    - team_id_home
+    - team_id_away
+    - game_date
+
+# Configuración de transformaciones
+data_transformation:
+  # Variables de fecha a extraer
+  date_features:
+    - year
+    - month
+    - day
+    - day_of_week
+    - day_of_year
+    - week_of_year
+    - is_weekend
+    - is_playoff_season
+  
+  # Variables categóricas para codificación
+  categorical_encoding:
+    one_hot:
+      - season_type
+    label:
+      - team_abbreviation_home
+      - team_abbreviation_away
+  
+  # Variables diferenciales a crear
+  differential_features:
+    - pts_diff
+    - fg_pct_diff
+    - reb_diff
+    - ast_diff
+    - stl_diff
+    - blk_diff
+    - tov_diff
+    - efficiency_diff
+  
+  # Configuración de escalado
+  scaling:
+    method: standard  # StandardScaler
+    features_to_scale:
+      - pts_home
+      - pts_away
+      - fg_pct_home
+      - fg_pct_away
+      - fg3_pct_home
+      - fg3_pct_away
+      - ft_pct_home
+      - ft_pct_away
+      - reb_home
+      - reb_away
+      - oreb_home
+      - oreb_away
+      - dreb_home
+      - dreb_away
+      - ast_home
+      - ast_away
+      - stl_home
+      - stl_away
+      - blk_home
+      - blk_away
+      - tov_home
+      - tov_away
+      - pf_home
+      - pf_away
+      - plus_minus_home
+      - plus_minus_away
+
+# Configuración de validación de datos
+data_validation:
+  # Verificaciones de calidad
+  quality_checks:
+    - check_nulls
+    - check_infinites
+    - check_duplicates
+    - check_data_types
+    - check_value_ranges
+  
+  # Rangos válidos para variables clave
+  valid_ranges:
+    fg_pct_home: [0, 1]
+    fg_pct_away: [0, 1]
+    fg3_pct_home: [0, 1]
+    fg3_pct_away: [0, 1]
+    ft_pct_home: [0, 1]
+    ft_pct_away: [0, 1]
+    pts_home: [0, 200]
+    pts_away: [0, 200]
+    reb_home: [0, 100]
+    reb_away: [0, 100]

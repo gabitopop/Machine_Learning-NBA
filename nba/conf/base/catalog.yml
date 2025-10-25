@@ -1,152 +1,236 @@
-# Here you can define all your data sets by using simple YAML syntax.
+# NBA Data Catalog - Datasets para el proyecto de predicción de ganadores NBA
 #
-# Documentation for this file format can be found in "The Data Catalog"
-# Link: https://docs.kedro.org/en/stable/data/data_catalog.html
-#
-# We support interacting with a variety of data stores including local file systems, cloud, network and HDFS
-#
-# An example data set definition can look as follows:
-#
-#bikes:
-#  type: pandas.CSVDataset
-#  filepath: "data/01_raw/bikes.csv"
-#
-#weather:
-#  type: spark.SparkDataset
-#  filepath: s3a://your_bucket/data/01_raw/weather*
-#  file_format: csv
-#  credentials: dev_s3
-#  load_args:
-#    header: True
-#    inferSchema: True
-#  save_args:
-#    sep: '|'
-#    header: True
-#
-#scooters:
-#  type: pandas.SQLTableDataset
-#  credentials: scooters_credentials
-#  table_name: scooters
-#  load_args:
-#    index_col: ['name']
-#    columns: ['name', 'gear']
-#  save_args:
-#    if_exists: 'replace'
-#    # if_exists: 'fail'
-#    # if_exists: 'append'
-#
-# The Data Catalog supports being able to reference the same file using two different Dataset implementations
-# (transcoding), templating and a way to reuse arguments that are frequently repeated. See more here:
-# https://docs.kedro.org/en/stable/data/data_catalog.html
+# Este catálogo define todos los datasets utilizados en el proyecto de machine learning
+# para predecir ganadores de partidos de la NBA.
 
-common_player_info:
-  type: pandas.CSVDataset
-  filepath: data/01_raw/common_player_info.csv
+# =============================================================================
+# DATASETS RAW (01_raw) - Datos originales de la NBA
+# =============================================================================
 
-draft_combine_stats:
-  type: pandas.CSVDataset
-  filepath: data/01_raw/draft_combine_stats.csv
-
-draft_history:
-  type: pandas.CSVDataset
-  filepath: data/01_raw/draft_history.csv
-
-game_info:
-  type: pandas.CSVDataset
-  filepath: data/01_raw/game_info.csv
-
-game_summary:
-  type: pandas.CSVDataset
-  filepath: data/01_raw/game_summary.csv
-
+# Dataset principal de partidos
 game:
   type: pandas.CSVDataset
   filepath: data/01_raw/game.csv
+  load_args:
+    low_memory: false
 
-inactive_players:
-  type: pandas.CSVDataset
-  filepath: data/01_raw/inactive_players.csv
-
-line_score:
-  type: pandas.CSVDataset
-  filepath: data/01_raw/line_score.csv
-
-officials:
-  type: pandas.CSVDataset
-  filepath: data/01_raw/officials.csv
-
+# Estadísticas adicionales de partidos
 other_stats:
   type: pandas.CSVDataset
   filepath: data/01_raw/other_stats.csv
+  load_args:
+    low_memory: false
 
-play_by_play:
-  type: pandas.CSVDataset
-  filepath: data/01_raw/play_by_play.csv
-
-player:
-  type: pandas.CSVDataset
-  filepath: data/01_raw/player.csv
-
-team_details:
-  type: pandas.CSVDataset
-  filepath: data/01_raw/team_details.csv
-
-team_history:
-  type: pandas.CSVDataset
-  filepath: data/01_raw/team_history.csv
-
-team_info_common:
-  type: pandas.CSVDataset
-  filepath: data/01_raw/team_info_common.csv
-
+# Información de equipos
 team:
   type: pandas.CSVDataset
   filepath: data/01_raw/team.csv
 
-shuttles:
-  type: pandas.ExcelDataset
-  filepath: data/01_raw/shuttles.xlsx
-  load_args:
-    engine: openpyxl
+# Información de jugadores
+player:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/player.csv
 
-preprocessed_companies:
-  type: pandas.ParquetDataset
-  filepath: data/02_intermediate/preprocessed_companies.parquet
+# Información de partidos (metadatos)
+game_info:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/game_info.csv
 
-preprocessed_shuttles:
-  type: pandas.ParquetDataset
-  filepath: data/02_intermediate/preprocessed_shuttles.parquet
+# Información común de jugadores
+common_player_info:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/common_player_info.csv
 
+# Estadísticas del draft combine
+draft_combine_stats:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/draft_combine_stats.csv
+
+# Historial del draft
+draft_history:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/draft_history.csv
+
+# Resumen de partidos
+game_summary:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/game_summary.csv
+
+# Jugadores inactivos
+inactive_players:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/inactive_players.csv
+
+# Puntuación línea por línea
+line_score:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/line_score.csv
+
+# Oficiales de partidos
+officials:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/officials.csv
+
+# Play by play
+play_by_play:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/play_by_play.csv
+
+# Detalles de equipos
+team_details:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/team_details.csv
+
+# Historial de equipos
+team_history:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/team_history.csv
+
+# Información común de equipos
+team_info_common:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/team_info_common.csv
+
+# =============================================================================
+# DATASETS INTERMEDIATE (02_intermediate) - Datos procesados
+# =============================================================================
+
+# Datos limpios de partidos
+games_cleaned:
+  type: pandas.CSVDataset
+  filepath: data/02_intermediate/games_cleaned.csv
+
+# Datos con feature engineering aplicado
+games_features:
+  type: pandas.CSVDataset
+  filepath: data/02_intermediate/games_features.csv
+
+# =============================================================================
+# DATASETS PRIMARY (03_primary) - Datos listos para modelado
+# =============================================================================
+
+# Dataset final para modelado
 model_input_table:
-  type: pandas.ParquetDataset
-  filepath: data/03_primary/model_input_table.parquet
+  type: pandas.CSVDataset
+  filepath: data/03_primary/model_input_table.csv
 
-regressor:
+# Dataset final procesado
+final_dataset:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/final_dataset.csv
+
+# =============================================================================
+# DATASETS MODEL INPUT (05_model_input) - Datos para entrenamiento
+# =============================================================================
+
+# Conjuntos de entrenamiento y prueba
+X_train:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/X_train.csv
+
+X_val:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/X_val.csv
+
+X_test:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/X_test.csv
+
+y_train:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/y_train.csv
+
+y_val:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/y_val.csv
+
+y_test:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/y_test.csv
+
+# Scaler para normalización
+scaler:
   type: pickle.PickleDataset
-  filepath: data/06_models/regressor.pickle
+  filepath: data/05_model_input/scaler.pkl
+
+# =============================================================================
+# DATASETS MODELS (06_models) - Modelos entrenados
+# =============================================================================
+
+# Modelo de clasificación principal
+nba_classifier:
+  type: pickle.PickleDataset
+  filepath: data/06_models/nba_classifier.pkl
   versioned: true
 
-shuttle_passenger_capacity_plot_exp:
-  type: plotly.PlotlyDataset
-  filepath: data/08_reporting/shuttle_passenger_capacity_plot_exp.json
-  versioned: true
-  plotly_args:
-    type: bar
-    fig:
-      x: shuttle_type
-      y: passenger_capacity
-      orientation: h
-    layout:
-      xaxis_title: Shuttles
-      yaxis_title: Average passenger capacity
-      title: Shuttle Passenger capacity
-
-shuttle_passenger_capacity_plot_go:
-  type: plotly.JSONDataset
-  filepath: data/08_reporting/shuttle_passenger_capacity_plot_go.json
+# Modelo de Random Forest
+random_forest_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/random_forest_model.pkl
   versioned: true
 
-dummy_confusion_matrix:
+# Modelo de Gradient Boosting
+gradient_boosting_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/gradient_boosting_model.pkl
+  versioned: true
+
+# Modelo de Regresión Logística
+logistic_regression_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/logistic_regression_model.pkl
+  versioned: true
+
+# =============================================================================
+# DATASETS MODEL OUTPUT (07_model_output) - Predicciones
+# =============================================================================
+
+# Predicciones del modelo
+predictions:
+  type: pandas.CSVDataset
+  filepath: data/07_model_output/predictions.csv
+
+# Métricas de evaluación
+model_metrics:
+  type: pandas.CSVDataset
+  filepath: data/07_model_output/model_metrics.csv
+
+# =============================================================================
+# DATASETS REPORTING (08_reporting) - Reportes y visualizaciones
+# =============================================================================
+
+# Gráfico de distribución de victorias
+win_distribution_plot:
   type: matplotlib.MatplotlibWriter
-  filepath: data/08_reporting/dummy_confusion_matrix.png
+  filepath: data/08_reporting/win_distribution_plot.png
+  versioned: true
+
+# Matriz de correlación
+correlation_matrix_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/correlation_matrix_plot.png
+  versioned: true
+
+# Gráfico de importancia de características
+feature_importance_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/feature_importance_plot.png
+  versioned: true
+
+# Matriz de confusión
+confusion_matrix_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/confusion_matrix_plot.png
+  versioned: true
+
+# Curva ROC
+roc_curve_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/roc_curve_plot.png
+  versioned: true
+
+# Reporte de métricas
+model_report:
+  type: text.TextDataset
+  filepath: data/08_reporting/model_report.txt
   versioned: true

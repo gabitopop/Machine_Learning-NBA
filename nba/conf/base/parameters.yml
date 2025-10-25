@@ -1,0 +1,32 @@
+# Parámetros globales para el proyecto NBA
+# Estos parámetros controlan el comportamiento general del proyecto
+
+# Configuración de logging
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# Configuración de random seed para reproducibilidad
+random_state: 42
+
+# Configuración de validación cruzada
+cross_validation:
+  n_splits: 5
+  shuffle: true
+  random_state: 42
+
+# Configuración de métricas de evaluación
+evaluation_metrics:
+  - accuracy
+  - precision
+  - recall
+  - f1_score
+  - roc_auc
+  - confusion_matrix
+
+# Configuración de visualizaciones
+visualization:
+  figure_size: [12, 8]
+  dpi: 300
+  style: seaborn-v0_8
+  color_palette: husl
