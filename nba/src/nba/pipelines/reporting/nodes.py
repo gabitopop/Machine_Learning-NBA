@@ -406,3 +406,292 @@ Reporte generado automáticamente por el pipeline de NBA
     logger.info("Reporte del modelo creado")
     
     return report
+
+
+def create_regression_target_distribution(model_input_table: pd.DataFrame, parameters: dict) -> plt.Figure:
+    """Crea un gráfico de distribución de la variable objetivo de regresión.
+
+    Args:
+        model_input_table: Datos del modelo con variable objetivo.
+        parameters: Parámetros de visualización.
+
+    Returns:
+        Figura de matplotlib con el gráfico de distribución.
+    """
+    logger.info("Creando gráfico de distribución de diferencial de puntos...")
+    
+    # Configuración de visualización
+    general_config = parameters["visualizations"]["general"]
+    
+    # Configurar estilo
+    plt.style.use(general_config["style"])
+    plt.rcParams['figure.figsize'] = general_config["figure_size"]
+    plt.rcParams['figure.dpi'] = general_config["dpi"]
+    
+    # Crear figura
+    fig, ax = plt.subplots()
+    
+    # Obtener variable objetivo de regresión
+    target_col = parameters.get("regression_target", "pts_diff")
+    if target_col not in model_input_table.columns:
+        logger.warning(f"Columna {target_col} no encontrada, usando pts_diff si existe")
+        if "pts_diff" in model_input_table.columns:
+            target_col = "pts_diff"
+        else:
+            logger.error("No se encontró variable objetivo de regresión")
+            return fig
+    
+    target_data = model_input_table[target_col]
+    
+    # Crear histograma
+    ax.hist(target_data, bins=50, color='skyblue', edgecolor='black', alpha=0.7)
+    
+    # Agregar línea de media
+    mean_val = target_data.mean()
+    ax.axvline(mean_val, color='red', linestyle='--', linewidth=2, label=f'Media: {mean_val:.2f}')
+    
+    # Configurar título y etiquetas
+    ax.set_title("Distribución del Diferencial de Puntos (pts_diff)", 
+                fontsize=general_config["title_size"], fontweight='bold')
+    ax.set_xlabel("Diferencial de Puntos (pts_home - pts_away)", fontsize=general_config["font_size"])
+    ax.set_ylabel("Frecuencia", fontsize=general_config["font_size"])
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    ax.set_axisbelow(True)
+    
+    plt.tight_layout()
+    logger.info("Gráfico de distribución de diferencial de puntos creado")
+    
+    return fig
+
+
+def create_predicted_vs_actual_plot(nba_regressor, scaler, X_test: pd.DataFrame, y_test: pd.Series, 
+                                   parameters: dict) -> plt.Figure:
+    """Crea un gráfico de predicciones vs valores reales.
+
+    Args:
+        nba_regressor: Modelo entrenado.
+        scaler: Scaler usado (puede ser None).
+        X_test: Datos de prueba.
+        y_test: Variable objetivo de prueba.
+        parameters: Parámetros de visualización.
+
+    Returns:
+        Figura de matplotlib con el gráfico.
+    """
+    logger.info("Creando gráfico de predicciones vs valores reales...")
+    
+    # Configuración de visualización
+    general_config = parameters["visualizations"]["general"]
+    model_name = parameters.get("model_name", "unknown")
+    
+    # Configurar estilo
+    plt.style.use(general_config["style"])
+    plt.rcParams['figure.figsize'] = general_config["figure_size"]
+    plt.rcParams['figure.dpi'] = general_config["dpi"]
+    
+    # Determinar si el modelo necesita escalado
+    linear_models = ['linear_regression', 'ridge', 'lasso', 'elastic_net', 'bayesian_ridge']
+    
+    if scaler is not None and model_name in linear_models:
+        X_test_prepared = scaler.transform(X_test)
+    else:
+        X_test_prepared = X_test
+    
+    # Predicciones
+    y_pred = nba_regressor.predict(X_test_prepared)
+    
+    # Crear figura
+    fig, ax = plt.subplots()
+    
+    # Scatter plot
+    ax.scatter(y_test, y_pred, alpha=0.5, s=20)
+    
+    # Línea perfecta (y = x)
+    min_val = min(y_test.min(), y_pred.min())
+    max_val = max(y_test.max(), y_pred.max())
+    ax.plot([min_val, max_val], [min_val, max_val], 'r--', linewidth=2, label='Predicción Perfecta')
+    
+    # Configurar título y etiquetas
+    ax.set_title(f"Predicciones vs Valores Reales - {model_name.replace('_', ' ').title()}", 
+                fontsize=general_config["title_size"], fontweight='bold')
+    ax.set_xlabel("Valores Reales (pts_diff)", fontsize=general_config["font_size"])
+    ax.set_ylabel("Predicciones (pts_diff)", fontsize=general_config["font_size"])
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    ax.set_axisbelow(True)
+    
+    plt.tight_layout()
+    logger.info("Gráfico de predicciones vs valores reales creado")
+    
+    return fig
+
+
+def create_residuals_plot(nba_regressor, scaler, X_test: pd.DataFrame, y_test: pd.Series, 
+                          parameters: dict) -> plt.Figure:
+    """Crea un gráfico de residuos.
+
+    Args:
+        nba_regressor: Modelo entrenado.
+        scaler: Scaler usado (puede ser None).
+        X_test: Datos de prueba.
+        y_test: Variable objetivo de prueba.
+        parameters: Parámetros de visualización.
+
+    Returns:
+        Figura de matplotlib con el gráfico.
+    """
+    logger.info("Creando gráfico de residuos...")
+    
+    # Configuración de visualización
+    general_config = parameters["visualizations"]["general"]
+    model_name = parameters.get("model_name", "unknown")
+    
+    # Configurar estilo
+    plt.style.use(general_config["style"])
+    plt.rcParams['figure.figsize'] = general_config["figure_size"]
+    plt.rcParams['figure.dpi'] = general_config["dpi"]
+    
+    # Determinar si el modelo necesita escalado
+    linear_models = ['linear_regression', 'ridge', 'lasso', 'elastic_net', 'bayesian_ridge']
+    
+    if scaler is not None and model_name in linear_models:
+        X_test_prepared = scaler.transform(X_test)
+    else:
+        X_test_prepared = X_test
+    
+    # Predicciones y residuos
+    y_pred = nba_regressor.predict(X_test_prepared)
+    residuals = y_test - y_pred
+    
+    # Crear figura con subplots
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+    
+    # Gráfico 1: Residuos vs Predicciones
+    ax1.scatter(y_pred, residuals, alpha=0.5, s=20)
+    ax1.axhline(y=0, color='r', linestyle='--', linewidth=2)
+    ax1.set_title("Residuos vs Predicciones", fontsize=general_config["title_size"], fontweight='bold')
+    ax1.set_xlabel("Predicciones", fontsize=general_config["font_size"])
+    ax1.set_ylabel("Residuos", fontsize=general_config["font_size"])
+    ax1.grid(True, alpha=0.3)
+    ax1.set_axisbelow(True)
+    
+    # Gráfico 2: Distribución de residuos
+    ax2.hist(residuals, bins=50, color='skyblue', edgecolor='black', alpha=0.7)
+    ax2.axvline(x=0, color='r', linestyle='--', linewidth=2)
+    ax2.set_title("Distribución de Residuos", fontsize=general_config["title_size"], fontweight='bold')
+    ax2.set_xlabel("Residuos", fontsize=general_config["font_size"])
+    ax2.set_ylabel("Frecuencia", fontsize=general_config["font_size"])
+    ax2.grid(True, alpha=0.3)
+    ax2.set_axisbelow(True)
+    
+    plt.tight_layout()
+    logger.info("Gráfico de residuos creado")
+    
+    return fig
+
+
+def create_regression_report(regression_metrics: dict, best_regressor_name: str, parameters: dict) -> str:
+    """Crea un reporte de texto con las métricas del modelo de regresión.
+
+    Args:
+        regression_metrics: Métricas del modelo de regresión.
+        best_regressor_name: Nombre del mejor modelo.
+        parameters: Parámetros de reporte.
+
+    Returns:
+        Reporte de texto con las métricas.
+    """
+    logger.info("Creando reporte del modelo de regresión...")
+    
+    # Configuración de reporte
+    report_config = parameters["reports"]["model_metrics"]
+    format_config = parameters["reports"]["format"]
+    
+    # Crear reporte
+    report = f"""
+{report_config['title']} - REGRESIÓN
+{'=' * len(report_config['title'])} REGRESIÓN
+
+Fecha de generación: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Mejor modelo seleccionado: {best_regressor_name}
+
+HIPÓTESIS DE REGRESIÓN
+----------------------
+La hipótesis propuesta es predecir el diferencial de puntos (pts_diff) en partidos de la NBA.
+El diferencial de puntos se calcula como: pts_home - pts_away
+
+Esta métrica proporciona información valiosa sobre:
+- La magnitud de la victoria/derrota del equipo local
+- La competitividad del partido
+- La capacidad del equipo local para mantener ventajas o superar desventajas
+
+RESUMEN EJECUTIVO
+-----------------
+El modelo de regresión para predicción del diferencial de puntos en partidos NBA ha sido
+entrenado y evaluado exitosamente. Se compararon múltiples algoritmos y se seleccionó el mejor
+basado en el rendimiento en el conjunto de validación (métrica principal: R² Score).
+
+MÉTRICAS DE RENDIMIENTO
+------------------------
+"""
+    
+    # Agregar métricas principales
+    for metric in ['r2_score', 'rmse', 'mae', 'explained_variance']:
+        if metric in regression_metrics:
+            value = regression_metrics[metric]
+            if metric == 'r2_score':
+                report += f"R² Score: {value:.{format_config['decimal_places']}f}\n"
+            elif metric == 'rmse':
+                report += f"RMSE (Root Mean Squared Error): {value:.{format_config['decimal_places']}f}\n"
+            elif metric == 'mae':
+                report += f"MAE (Mean Absolute Error): {value:.{format_config['decimal_places']}f}\n"
+            elif metric == 'explained_variance':
+                report += f"Explained Variance: {value:.{format_config['decimal_places']}f}\n"
+    
+    # Métricas adicionales
+    if 'mean_residual' in regression_metrics:
+        report += f"""
+ANÁLISIS DE RESIDUOS
+--------------------
+Media de Residuos: {regression_metrics['mean_residual']:.{format_config['decimal_places']}f}
+Desviación Estándar de Residuos: {regression_metrics.get('std_residual', 0):.{format_config['decimal_places']}f}
+"""
+    
+    report += f"""
+INTERPRETACIÓN DE RESULTADOS
+-----------------------------
+"""
+    
+    r2 = regression_metrics.get('r2_score', 0)
+    if r2 > 0.8:
+        report += "El modelo muestra un excelente ajuste (R² > 0.8), explicando más del 80% de la varianza.\n"
+    elif r2 > 0.6:
+        report += "El modelo muestra un buen ajuste (R² > 0.6), explicando más del 60% de la varianza.\n"
+    elif r2 > 0.4:
+        report += "El modelo muestra un ajuste moderado (R² > 0.4), explicando más del 40% de la varianza.\n"
+    else:
+        report += "El modelo muestra un ajuste limitado. Se recomienda revisar características y parámetros.\n"
+    
+    report += f"""
+ANÁLISIS DE CARACTERÍSTICAS
+---------------------------
+El modelo utiliza múltiples características derivadas de estadísticas de partidos NBA,
+incluyendo variables diferenciales entre equipos locales y visitantes, características
+temporales y variables de eficiencia para predecir el diferencial de puntos.
+
+RECOMENDACIONES
+---------------
+1. El modelo está listo para predicciones del diferencial de puntos
+2. Se recomienda actualizar el modelo regularmente con datos recientes
+3. Considerar la incorporación de datos adicionales como lesiones de jugadores clave
+4. Monitorear el rendimiento del modelo en producción
+5. Validar predicciones con expertos en NBA para mejorar el modelo
+
+---
+Reporte generado automáticamente por el pipeline de regresión NBA
+"""
+    
+    logger.info("Reporte del modelo de regresión creado")
+    
+    return report

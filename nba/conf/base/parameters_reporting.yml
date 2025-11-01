@@ -98,6 +98,9 @@ export:
     include_metric: true
     separator: "_"
 
+# Configuración para regresión
+regression_target: pts_diff  # Variable objetivo de regresión
+
 # Configuración de logging para reportes
 logging:
   level: INFO

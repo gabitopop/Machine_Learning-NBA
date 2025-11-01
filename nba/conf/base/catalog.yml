@@ -123,7 +123,7 @@ final_dataset:
 # DATASETS MODEL INPUT (05_model_input) - Datos para entrenamiento
 # =============================================================================
 
-# Conjuntos de entrenamiento y prueba
+# Conjuntos de entrenamiento y prueba (CLASIFICACIÓN)
 X_train:
   type: pandas.CSVDataset
   filepath: data/05_model_input/X_train.csv
@@ -148,10 +148,44 @@ y_test:
   type: pandas.CSVDataset
   filepath: data/05_model_input/y_test.csv
 
-# Scaler para normalización
+# Scaler para normalización (CLASIFICACIÓN)
 scaler:
   type: pickle.PickleDataset
   filepath: data/05_model_input/scaler.pkl
+
+# Conjuntos de entrenamiento y prueba (REGRESIÓN)
+X_train_reg:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/X_train_reg.csv
+
+X_val_reg:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/X_val_reg.csv
+
+X_test_reg:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/X_test_reg.csv
+
+y_train_reg:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/y_train_reg.csv
+
+y_val_reg:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/y_val_reg.csv
+
+y_test_reg:
+  type: pandas.CSVDataset
+  filepath: data/05_model_input/y_test_reg.csv
+
+# Scaler para normalización (REGRESIÓN)
+regression_scaler:
+  type: pickle.PickleDataset
+  filepath: data/05_model_input/regression_scaler.pkl
+
+final_regression_scaler:
+  type: pickle.PickleDataset
+  filepath: data/05_model_input/final_regression_scaler.pkl
 
 # =============================================================================
 # DATASETS MODELS (06_models) - Modelos entrenados
@@ -181,6 +215,36 @@ logistic_regression_model:
   filepath: data/06_models/logistic_regression_model.pkl
   versioned: true
 
+# Modelos de Regresión
+nba_regressor:
+  type: pickle.PickleDataset
+  filepath: data/06_models/nba_regressor.pkl
+  versioned: true
+
+# Modelos de ensemble para regresión
+ensemble_regressors:
+  type: pickle.PickleDataset
+  filepath: data/06_models/ensemble_regressors.pkl
+  versioned: true
+
+# Modelos lineales para regresión
+linear_regressors:
+  type: pickle.PickleDataset
+  filepath: data/06_models/linear_regressors.pkl
+  versioned: true
+
+# Otros modelos de regresión
+other_regressors:
+  type: pickle.PickleDataset
+  filepath: data/06_models/other_regressors.pkl
+  versioned: true
+
+# Todos los modelos de regresión combinados
+all_regressors:
+  type: pickle.PickleDataset
+  filepath: data/06_models/all_regressors.pkl
+  versioned: true
+
 # =============================================================================
 # DATASETS MODEL OUTPUT (07_model_output) - Predicciones
 # =============================================================================
@@ -190,10 +254,30 @@ predictions:
   type: pandas.CSVDataset
   filepath: data/07_model_output/predictions.csv
 
-# Métricas de evaluación
+# Métricas de evaluación (CLASIFICACIÓN)
 model_metrics:
   type: pandas.CSVDataset
   filepath: data/07_model_output/model_metrics.csv
+
+# Métricas de evaluación (REGRESIÓN)
+regression_metrics:
+  type: json.JSONDataset
+  filepath: data/07_model_output/regression_metrics.json
+
+# Tabla comparativa de modelos de regresión
+regression_comparison_table:
+  type: pandas.CSVDataset
+  filepath: data/07_model_output/regression_comparison_table.csv
+
+# Mejor modelo de regresión
+best_regressor_name:
+  type: text.TextDataset
+  filepath: data/07_model_output/best_regressor_name.txt
+
+# Métricas del mejor modelo de regresión
+best_regressor_metrics:
+  type: json.JSONDataset
+  filepath: data/07_model_output/best_regressor_metrics.json
 
 # =============================================================================
 # DATASETS REPORTING (08_reporting) - Reportes y visualizaciones
@@ -229,8 +313,39 @@ roc_curve_plot:
   filepath: data/08_reporting/roc_curve_plot.png
   versioned: true
 
-# Reporte de métricas
+# Reporte de métricas (CLASIFICACIÓN)
 model_report:
   type: text.TextDataset
   filepath: data/08_reporting/model_report.txt
   versioned: true
+
+# Visualizaciones de Regresión
+regression_target_distribution_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/regression_target_distribution_plot.png
+  versioned: true
+
+predicted_vs_actual_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/predicted_vs_actual_plot.png
+  versioned: true
+
+residuals_plot:
+  type: matplotlib.MatplotlibWriter
+  filepath: data/08_reporting/residuals_plot.png
+  versioned: true
+
+# Reporte de regresión
+regression_report:
+  type: text.TextDataset
+  filepath: data/08_reporting/regression_report.txt
+  versioned: true
+
+# Parámetros para reporting de regresión
+regression_reporting_params:
+  type: pickle.PickleDataset
+  filepath: data/08_reporting/regression_reporting_params.pkl
+
+regression_params_with_model:
+  type: pickle.PickleDataset
+  filepath: data/08_reporting/regression_params_with_model.pkl

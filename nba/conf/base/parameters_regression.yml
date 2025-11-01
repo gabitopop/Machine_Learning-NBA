@@ -1,0 +1,139 @@
+# Parámetros para el pipeline de regresión NBA
+# Hipótesis: Predecir el diferencial de puntos (pts_diff) en partidos NBA
+# El diferencial de puntos indica cuánto gana o pierde el equipo local
+
+# Configuración de división de datos
+data_splitting:
+  test_size: 0.2  # 20% para prueba
+  val_size: 0.2   # 20% del entrenamiento para validación
+  random_state: 42
+
+# Configuración de características (features)
+features:
+  # Variables predictoras principales
+  numeric_features:
+    - pts_home
+    - pts_away
+    - fg_pct_home
+    - fg_pct_away
+    - fg3_pct_home
+    - fg3_pct_away
+    - ft_pct_home
+    - ft_pct_away
+    - reb_home
+    - reb_away
+    - oreb_home
+    - oreb_away
+    - dreb_home
+    - dreb_away
+    - ast_home
+    - ast_away
+    - stl_home
+    - stl_away
+    - blk_home
+    - blk_away
+    - tov_home
+    - tov_away
+    - pf_home
+    - pf_away
+    - plus_minus_home
+    - plus_minus_away
+  
+  # Variables diferenciales (excluyendo pts_diff que es la variable objetivo)
+  differential_features:
+    - fg_pct_diff
+    - reb_diff
+    - ast_diff
+    - stl_diff
+    - blk_diff
+    - tov_diff
+    - efficiency_diff
+  
+  # Variables de fecha
+  date_features:
+    - year
+    - month
+    - day_of_week
+    - is_weekend
+    - is_playoff_season
+  
+  # Variables categóricas codificadas
+  categorical_features:
+    - team_home_encoded
+    - team_away_encoded
+    - season_Regular Season
+    - season_Playoffs
+    - season_Pre Season
+    - season_All Star
+    - season_All-Star
+
+# Variable objetivo (regresión)
+target: pts_diff  # Diferencial de puntos: pts_home - pts_away
+
+# Configuración de modelos
+models:
+  # Random Forest Regressor
+  random_forest:
+    n_estimators: 100
+    max_depth: 10
+    min_samples_split: 5
+    min_samples_leaf: 2
+    random_state: 42
+    n_jobs: -1
+  
+  # Gradient Boosting Regressor
+  gradient_boosting:
+    n_estimators: 100
+    learning_rate: 0.1
+    max_depth: 6
+    min_samples_split: 5
+    min_samples_leaf: 2
+    random_state: 42
+  
+  # Linear Regression
+  linear_regression:
+    fit_intercept: true
+  
+  # Ridge Regression
+  ridge:
+    alpha: 1.0
+    random_state: 42
+  
+  # Lasso Regression
+  lasso:
+    alpha: 1.0
+    random_state: 42
+    max_iter: 1000
+  
+  # ElasticNet
+  elastic_net:
+    alpha: 1.0
+    l1_ratio: 0.5
+    random_state: 42
+    max_iter: 1000
+
+# Configuración de validación cruzada
+cross_validation:
+  n_splits: 5
+  shuffle: true
+  random_state: 42
+  scoring: neg_mean_squared_error
+
+# Configuración de evaluación
+model_evaluation:
+  # Métricas principales para regresión
+  primary_metrics:
+    - r2_score
+    - rmse
+    - mae
+    - explained_variance
+  
+  # Métricas adicionales
+  secondary_metrics:
+    - median_absolute_error
+    - mean_absolute_percentage_error
+    - residuals_analysis
+
+# Nombre del modelo para evaluación (se actualiza después de seleccionar el mejor)
+model_name: unknown
+
