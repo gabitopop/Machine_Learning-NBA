@@ -39,9 +39,9 @@ dag = DAG(
 check_data_availability = FileSensor(
     task_id='check_data_availability',
     filepath='/opt/airflow/data/01_raw/game.csv',
-    fs_conn_id='fs_default',
     poke_interval=30,
     timeout=300,
+    mode='poke',
     dag=dag,
 )
 
@@ -49,6 +49,7 @@ check_data_availability = FileSensor(
 data_processing_pipeline = BashOperator(
     task_id='data_processing_pipeline',
     bash_command='''
+    export PYTHONPATH=/opt/airflow/src:$PYTHONPATH
     cd /opt/airflow
     kedro run --pipeline data_processing
     ''',
@@ -59,6 +60,7 @@ data_processing_pipeline = BashOperator(
 regression_pipeline = BashOperator(
     task_id='regression_pipeline',
     bash_command='''
+    export PYTHONPATH=/opt/airflow/src:$PYTHONPATH
     cd /opt/airflow
     kedro run --pipeline regression
     ''',
@@ -69,6 +71,7 @@ regression_pipeline = BashOperator(
 regression_reporting_pipeline = BashOperator(
     task_id='regression_reporting_pipeline',
     bash_command='''
+    export PYTHONPATH=/opt/airflow/src:$PYTHONPATH
     cd /opt/airflow
     kedro run --pipeline regression_reporting
     ''',

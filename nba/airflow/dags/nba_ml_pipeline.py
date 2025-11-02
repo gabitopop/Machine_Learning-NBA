@@ -5,9 +5,8 @@ Ejecuta ambos pipelines (data_processing + data_science) y consolida resultados
 
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.operators.bash_operator import BashOperator
-from airflow.operators.python_operator import PythonOperator
-from airflow.operators.dummy_operator import DummyOperator
+from airflow.operators.bash import BashOperator
+from airflow.operators.python import PythonOperator
 from airflow.sensors.filesystem import FileSensor
 from airflow.utils.dates import days_ago
 import json
@@ -40,9 +39,9 @@ dag = DAG(
 check_data_availability = FileSensor(
     task_id='check_data_availability',
     filepath='/opt/airflow/data/01_raw/game.csv',
-    fs_conn_id='fs_default',
     poke_interval=30,
     timeout=300,
+    mode='poke',
     dag=dag,
 )
 
@@ -50,7 +49,8 @@ check_data_availability = FileSensor(
 data_processing_pipeline = BashOperator(
     task_id='data_processing_pipeline',
     bash_command='''
-    cd /opt/airflow/data
+    export PYTHONPATH=/opt/airflow/src:$PYTHONPATH
+    cd /opt/airflow
     kedro run --pipeline data_processing
     ''',
     dag=dag,
@@ -60,7 +60,8 @@ data_processing_pipeline = BashOperator(
 data_science_pipeline = BashOperator(
     task_id='data_science_pipeline',
     bash_command='''
-    cd /opt/airflow/data
+    export PYTHONPATH=/opt/airflow/src:$PYTHONPATH
+    cd /opt/airflow
     kedro run --pipeline data_science
     ''',
     dag=dag,
@@ -70,7 +71,8 @@ data_science_pipeline = BashOperator(
 reporting_pipeline = BashOperator(
     task_id='reporting_pipeline',
     bash_command='''
-    cd /opt/airflow/data
+    export PYTHONPATH=/opt/airflow/src:$PYTHONPATH
+    cd /opt/airflow
     kedro run --pipeline reporting
     ''',
     dag=dag,
@@ -97,7 +99,7 @@ def consolidate_results(**context):
     except FileNotFoundError:
         metrics['data_science'] = {'error': 'Archivo no encontrado'}
     
-    # Métricas de reportes
+    # Métricas de reportes (si existe)
     try:
         with open('/opt/airflow/data/metrics/reporting.json', 'r') as f:
             metrics['reporting'] = json.load(f)
@@ -110,8 +112,8 @@ def consolidate_results(**context):
         'pipeline_status': 'completed',
         'metrics': metrics,
         'artifacts': {
-            'models': '/opt/airflow/data/data/06_models/',
-            'reports': '/opt/airflow/data/data/08_reporting/',
+            'models': '/opt/airflow/data/06_models/',
+            'reports': '/opt/airflow/data/08_reporting/',
             'plots': '/opt/airflow/data/plots/'
         }
     }
@@ -137,8 +139,8 @@ notify_completion = BashOperator(
     bash_command='''
     echo "🏀 Pipeline NBA ML completado exitosamente!"
     echo "📊 Métricas disponibles en: /opt/airflow/data/metrics/"
-    echo "📈 Reportes disponibles en: /opt/airflow/data/data/08_reporting/"
-    echo "🎯 Modelos disponibles en: /opt/airflow/data/data/06_models/"
+    echo "📈 Reportes disponibles en: /opt/airflow/data/08_reporting/"
+    echo "🎯 Modelos disponibles en: /opt/airflow/data/06_models/"
     ''',
     dag=dag,
 )

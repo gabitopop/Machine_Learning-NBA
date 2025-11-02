@@ -29,23 +29,33 @@ services:
     command: ["kedro", "jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
     
   nba-airflow:
-    image: apache/airflow:2.7.0
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
     container_name: nba-airflow
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__CORE__DAGS_FOLDER=/opt/airflow/dags
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True
+      - PYTHONPATH=/opt/airflow/src:/opt/airflow
+      - KEDRO_CONFIG_FILE=conf/local/parameters.yml
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
       - ./data:/opt/airflow/data
+      - ./src:/opt/airflow/src
+      - ./conf:/opt/airflow/conf
+      - ./pyproject.toml:/opt/airflow/pyproject.toml
+      - ./requirements.txt:/opt/airflow/requirements.txt
+      - ./metrics:/opt/airflow/data/metrics
+      - .:/opt/airflow/project:ro
     ports:
       - "8080:8080"
     command: >
       bash -c "
         airflow db init &&
-        airflow users create --username admin --firstname Admin --lastname User --role Admin --email admin@example.com --password admin &&
+        airflow users create --username admin --firstname Admin --lastname User --role Admin --email admin@example.com --password admin || true &&
         airflow webserver --port 8080 &
         airflow scheduler
       "
